@@ -26,7 +26,7 @@ RUN apt-get install -y openssh-client
 RUN apt-get install -y openssh-server
 RUN apt-get install -y vsftpd
 RUN apt-get install -y tmux
-RUN apt-get install -y netcat
+RUN apt-get install -y netcat-traditional
 RUN apt-get install -y ftp
 RUN apt-get install -y kmod
 RUN apt-get install -y sudo

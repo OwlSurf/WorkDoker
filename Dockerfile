@@ -23,10 +23,13 @@ COPY .vimrc root/.vimrc
 RUN vim +PlugInstall +qall;\
     apt-get install -y openssh-client;\
     apt-get install -y openssh-server;\
-    apt-get install -y vsftpd;\
+    echo 'root:root' | chpasswd;\
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config;
+EXPOSE 22
+RUN apt-get install -y vsftpd;\
     apt-get install -y tmux;\
     apt-get install -y netcat-traditional;\
     apt-get install -y ftp;\
     apt-get install -y kmod;\
     apt-get install -y sudo;
-CMD bash
+ENTRYPOINT service ssh start && bash

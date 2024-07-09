@@ -11,9 +11,12 @@ Set your git the following command.
 Because trailing characters ^M will affect the docker image build.
 
 ## How to use:
-    docker built -t your_image_tag .
-    docker run -id --name container_name -p 22:22 -p your_image_tag
-    Connect to your container:
+### Build docker image.
+    docker build -t your_image_tag .
+### Run container with 22 port forwarding.
+    docker run -id --name container_name -p 22:22 your_image_tag
+### Connect to your container:
     docker exec -it  container_name /bin/bash
-    or use ssh login:root password:root
-    Enjoy...
+### Or use ssh 
+    login:root password:root
+Enjoy...

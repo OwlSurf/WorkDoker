@@ -1,35 +1,69 @@
-FROM ubuntu:latest
-RUN apt-get update && yes | unminimize;
-RUN apt-get upgrade;
-RUN apt-get install -y mc;\
-    apt-get install -y man;\
-    apt-get install -y manpages-posix;\
-    apt-get install -y tree;\
-    apt-get install -y git;\
-    apt-get install -y gcc;\
-    apt-get install -y g++;\
-    apt-get install -y gdb;\
-    apt-get install -y gcc-arm-none-eabi;\
-    apt-get install -y cmake;\
-    apt-get install -y ninja-build;\
-    apt-get install -y libgtest-dev;\
-    apt-get install -y iputils-ping;\
-    apt-get install -y net-tools;\
-    apt-get install -y vim;\
-    apt-get install -y curl;\
-    curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-COPY .vimrc root/.vimrc
-RUN vim +PlugInstall +qall;\
-    apt-get install -y openssh-client;\
-    apt-get install -y openssh-server;\
-    echo 'root:root' | chpasswd;\
-    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config;
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8
+
+# Base system utilities and host compilers
+RUN apt-get update && apt-get upgrade -y && \
+    yes | unminimize && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        git \
+        sudo \
+        tree \
+        mc \
+        vim \
+        tmux \
+        man \
+        manpages-posix \
+        kmod \
+        # Host toolchain
+        build-essential \
+        gcc \
+        g++ \
+        gdb \
+        cmake \
+        ninja-build \
+        libgtest-dev \
+        # Networking / remote access
+        iputils-ping \
+        net-tools \
+        netcat-traditional \
+        openssh-client \
+        openssh-server \
+        vsftpd \
+        ftp \
+        # ARM bare-metal (Cortex-M/R)
+        gcc-arm-none-eabi \
+        binutils-arm-none-eabi \
+        libnewlib-arm-none-eabi \
+        libstdc++-arm-none-eabi-newlib \
+        # ARM Linux cross (AArch64 + ARMv7 hard-float)
+        gcc-aarch64-linux-gnu \
+        g++-aarch64-linux-gnu \
+        gcc-arm-linux-gnueabihf \
+        g++-arm-linux-gnueabihf \
+        # Debug / flash / emulate
+        gdb-multiarch \
+        openocd \
+        stlink-tools \
+        dfu-util \
+        qemu-system-arm \
+        qemu-user-static \
+    && rm -rf /var/lib/apt/lists/*
+
+# Vim plugins
+RUN curl -fLo /root/.vim/autoload/plug.vim --create-dirs \
+        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+COPY .vimrc /root/.vimrc
+RUN vim +PlugInstall +qall
+
+# SSH: lab/test container credentials (change for anything beyond local use)
+RUN mkdir -p /var/run/sshd && \
+    echo 'root:root' | chpasswd && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
 EXPOSE 22
-RUN apt-get install -y vsftpd;\
-    apt-get install -y tmux;\
-    apt-get install -y netcat-traditional;\
-    apt-get install -y ftp;\
-    apt-get install -y kmod;\
-    apt-get install -y sudo;
-ENTRYPOINT service ssh start && bash
+
+ENTRYPOINT ["bash", "-c", "service ssh start && exec bash"]

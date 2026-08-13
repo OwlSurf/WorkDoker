@@ -15,7 +15,8 @@ RUN apt-get update && apt-get upgrade -y && \
         mc \
         vim \
         tmux \
-        man \
+        man-db \
+        manpages \
         manpages-posix \
         kmod \
         # Host toolchain
